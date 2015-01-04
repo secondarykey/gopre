@@ -5,8 +5,6 @@ import (
 	"appengine/user"
 	"html/template"
 	"net/http"
-
-	"gopre/me"
 )
 
 func init() {
@@ -14,28 +12,22 @@ func init() {
 }
 
 func router() {
-
-	http.HandleFunc("/", TopHandler)
-	http.HandleFunc("/index", TopHandler)
-
-	//user dashbord
-	http.HandleFunc("/me/", DashboardHandler)
-	http.HandleFunc("/me/slides", SlideHandler)
-	http.HandleFunc("/me/templates", TemplateHandler)
-
-	//user pages
-
-	//publish pages
+	http.HandleFunc("/", topHandler)
+	http.HandleFunc("/index", topHandler)
 }
 
-func Display(w http.ResponseWriter, r *http.Request, name string, handler func(http.ResponseWriter, *http.Request, map[string]interface{})) error {
+func Display(w http.ResponseWriter, r *http.Request, name []string, handler func(http.ResponseWriter, *http.Request, map[string]interface{})) error {
 
 	w.Header().Set("Content-type", "text/html; charset=utf-8")
 	path := "gopre/templates/"
-	var listTmpl = template.Must(
-		template.ParseFiles(
-			path+"layout.tmpl",
-			path+name))
+
+	templates := make([]string, len(name)+1)
+	templates[0] = path + "layout.tmpl"
+	for i, v := range name {
+		templates[i+1] = path + v
+	}
+
+	var listTmpl = template.Must(template.ParseFiles(templates...))
 
 	tc := make(map[string]interface{})
 	c := appengine.NewContext(r)
@@ -58,21 +50,10 @@ func Display(w http.ResponseWriter, r *http.Request, name string, handler func(h
 	return nil
 }
 
-func TopHandler(w http.ResponseWriter, r *http.Request) {
-	Display(w, r, "index.tmpl", nil)
+func topHandler(w http.ResponseWriter, r *http.Request) {
+	Display(w, r, St2Sl("index.tmpl"), nil)
 }
 
-func DashboardHandler(w http.ResponseWriter, r *http.Request) {
-	function := me.GetDashboardParamFunc()
-	Display(w, r, "me/dashboard.tmpl", function)
-}
-
-func SlideHandler(w http.ResponseWriter, r *http.Request) {
-	function := me.GetSlideParamFunc()
-	Display(w, r, "me/slide.tmpl", function)
-}
-
-func TemplateHandler(w http.ResponseWriter, r *http.Request) {
-	function := me.GetTemplateParamFunc()
-	Display(w, r, "me/template.tmpl", function)
+func St2Sl(val ...string) []string {
+	return []string(val)
 }

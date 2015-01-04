@@ -1,9 +1,11 @@
 package me
 
 import (
+	"gopre"
 	"net/http"
 )
 
-func GetTemplateParamFunc() func(http.ResponseWriter, *http.Request, map[string]interface{}) {
-	return nil
+func templateHandler(w http.ResponseWriter, r *http.Request) {
+	gopre.Display(w, r,
+		gopre.St2Sl("me/menu.tmpl", "me/template.tmpl"), nil)
 }
